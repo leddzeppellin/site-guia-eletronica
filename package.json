@@ -1,8 +1,13 @@
 {
-  "name": "componentes-eletronicos",
+  "name": "site-guia-eletronica",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
+  "description": "Guia didático de componentes eletrônicos para estudantes, hobbystas e técnicos — com calculadoras práticas e tradução multilíngue.",
+  "homepage": "https://github.com/leddzeppellin/site-guia-eletronica#readme",
+  "bugs": {
+    "url": "https://github.com/leddzeppellin/site-guia-eletronica/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
