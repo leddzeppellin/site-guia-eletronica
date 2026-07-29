@@ -157,7 +157,7 @@ Distribuído sob a licença **MIT**. Veja [`LICENSE`](LICENSE) pra mais detalhes
 
 ## 👤 Autor
 
-Feito com ☕ por **Lucas (Led Zeppelin)** — técnico em eletrônica e desenvolvedor em Anastácio/MS, Brasil.
+Feito com ☕ por **RicardoValerioS** — técnico em eletrônica e desenvolvedor em Anastácio/MS, Brasil.
 
 - GitHub: [@leddzeppellin](https://github.com/leddzeppellin)
 - Outros projetos: [genius-windows-toolkit](https://github.com/leddzeppellin/genius-windows-toolkit) · [CapBatCalc](https://github.com/leddzeppellin/CapBatCalc)
