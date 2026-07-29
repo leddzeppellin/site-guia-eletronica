@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button.jsx';
 import { Calculator, Zap, Settings, ArrowRight } from 'lucide-react';
+import { useLanguage } from './LanguageProvider.jsx';
 
 export function QuickCalculators() {
+  const { t } = useLanguage();
   const [activeCalculator, setActiveCalculator] = useState('led');
   const [ledInputs, setLedInputs] = useState({
     supplyVoltage: '',
@@ -10,37 +12,50 @@ export function QuickCalculators() {
     current: ''
   });
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
   const calculators = [
     {
       id: 'led',
-      name: 'Resistor para LED',
-      description: 'Calcule o resistor necessário para seu LED',
+      name: t('ledResistorCalc'),
+      description: t('ledResistorDesc'),
       icon: <Zap className="h-5 w-5" />,
       color: 'bg-yellow-50 border-yellow-200'
     },
     {
       id: 'ohm',
-      name: 'Lei de Ohm',
-      description: 'Calcule tensão, corrente ou resistência',
+      name: t('ohmLawCalc'),
+      description: t('availableBelow'),
       icon: <Calculator className="h-5 w-5" />,
       color: 'bg-blue-50 border-blue-200'
     },
     {
       id: 'divider',
-      name: 'Divisor de Tensão',
-      description: 'Calcule a tensão de saída do divisor',
+      name: t('voltageDividerCalc'),
+      description: t('availableBelow'),
       icon: <Settings className="h-5 w-5" />,
       color: 'bg-green-50 border-green-200'
     }
   ];
+
+  const selectCalculator = (id) => {
+    setActiveCalculator(id);
+    setResult(null);
+    setError('');
+
+    if (id !== 'led') {
+      requestAnimationFrame(() => {
+        document.getElementById('advanced-calculators')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    }
+  };
 
   const calculateLedResistor = () => {
     const supply = parseFloat(ledInputs.supplyVoltage);
     const ledV = parseFloat(ledInputs.ledVoltage);
     const current = parseFloat(ledInputs.current) / 1000; // Convert mA to A
 
-    if (supply && ledV && current && supply > ledV) {
+    if (Number.isFinite(supply) && Number.isFinite(ledV) && Number.isFinite(current) && supply > ledV && current > 0) {
       const resistance = (supply - ledV) / current;
       const power = Math.pow(supply - ledV, 2) / resistance;
       
@@ -49,11 +64,20 @@ export function QuickCalculators() {
         power: (power * 1000).toFixed(2), // Convert to mW
         commercial: getCommercialResistor(resistance)
       });
+      setError('');
+      return;
     }
+
+    setResult(null);
+    setError(t('invalidInputs'));
   };
 
   const getCommercialResistor = (resistance) => {
-    const standardValues = [100, 120, 150, 180, 220, 270, 330, 390, 470, 560, 680, 820, 1000, 1200, 1500, 1800, 2200, 2700, 3300, 3900, 4700, 5600, 6800, 8200, 10000];
+    const baseValues = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82];
+    const standardValues = [];
+    for (let decade = 1; decade <= 100000; decade *= 10) {
+      standardValues.push(...baseValues.map((value) => value * decade));
+    }
     const closest = standardValues.reduce((prev, curr) => 
       Math.abs(curr - resistance) < Math.abs(prev - resistance) ? curr : prev
     );
@@ -63,33 +87,33 @@ export function QuickCalculators() {
   const handleInputChange = (field, value) => {
     setLedInputs(prev => ({ ...prev, [field]: value }));
     setResult(null);
+    setError('');
   };
 
   return (
-    <section className="py-20 bg-white">
+    <section id="calculators" className="py-20 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Calculadoras Rápidas
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            {t('calculatorsTitle')}
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Ferramentas práticas para seus projetos eletrônicos. 
-            Calcule valores rapidamente e com precisão.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            {t('calculatorsDescription')}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Calculator Selection */}
           <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-4">
-              Escolha uma calculadora:
+            <h3 className="text-xl font-semibold mb-4">
+              {t('chooseCalculator')}
             </h3>
             
             <div className="space-y-3">
               {calculators.map((calc) => (
                 <button
                   key={calc.id}
-                  onClick={() => setActiveCalculator(calc.id)}
+                  onClick={() => selectCalculator(calc.id)}
                   className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
                     activeCalculator === calc.id
                       ? 'border-blue-500 bg-blue-50'
@@ -101,8 +125,8 @@ export function QuickCalculators() {
                       {calc.icon}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">{calc.name}</h4>
-                      <p className="text-sm text-gray-600">{calc.description}</p>
+                      <h4 className="font-semibold text-gray-900 dark:text-gray-100">{calc.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{calc.description}</p>
                     </div>
                   </div>
                 </button>
@@ -110,30 +134,31 @@ export function QuickCalculators() {
             </div>
 
             <div className="pt-6 border-t">
-              <Button className="w-full" size="lg">
-                Ver Todas as Calculadoras
+              <Button asChild className="w-full" size="lg">
+                <a href="#advanced-calculators">
+                {t('viewAllCalculators')}
                 <ArrowRight className="ml-2 h-5 w-5" />
+                </a>
               </Button>
             </div>
           </div>
 
-          {/* Calculator Interface */}
-          <div className="bg-gray-50 rounded-xl p-8">
+          <div className="bg-muted/60 rounded-xl p-8">
             {activeCalculator === 'led' && (
               <div className="space-y-6">
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Calculadora de Resistor para LED
+                  <h3 className="text-2xl font-bold mb-2">
+                    {t('ledCalculatorTitle')}
                   </h3>
-                  <p className="text-gray-600">
-                    Determine o resistor limitador de corrente
+                  <p className="text-muted-foreground">
+                    {t('ledCalculatorSubtitle')}
                   </p>
                 </div>
 
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tensão de Alimentação (V)
+                      {t('supplyVoltage')}
                     </label>
                     <input
                       type="number"
@@ -147,7 +172,7 @@ export function QuickCalculators() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tensão do LED (V)
+                      {t('ledVoltage')}
                     </label>
                     <input
                       type="number"
@@ -161,7 +186,7 @@ export function QuickCalculators() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Corrente Desejada (mA)
+                      {t('desiredCurrent')}
                     </label>
                     <input
                       type="number"
@@ -179,34 +204,39 @@ export function QuickCalculators() {
                     size="lg"
                   >
                     <Calculator className="mr-2 h-5 w-5" />
-                    Calcular
+                    {t('calculate')}
                   </Button>
                 </div>
 
+                {error && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+                    {error}
+                  </div>
+                )}
+
                 {result && (
-                  <div className="mt-6 p-6 bg-white rounded-lg border border-gray-200">
-                    <h4 className="font-semibold text-gray-900 mb-4">Resultados:</h4>
+                  <div className="mt-6 p-6 bg-card rounded-lg border">
+                    <h4 className="font-semibold mb-4">{t('results')}</h4>
                     <div className="space-y-3">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Resistor necessário:</span>
+                        <span className="text-muted-foreground">{t('requiredResistor')}</span>
                         <span className="font-semibold text-blue-600">{result.resistance}Ω</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Potência dissipada:</span>
+                        <span className="text-muted-foreground">{t('powerDissipated')}</span>
                         <span className="font-semibold">{result.power}mW</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Valor comercial:</span>
+                        <span className="text-muted-foreground">{t('commercialValue')}</span>
                         <span className="font-semibold text-green-600">{result.commercial}</span>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Circuit diagram placeholder */}
-                <div className="mt-6 p-6 bg-white rounded-lg border border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-4">Circuito:</h4>
-                  <div className="flex items-center justify-center h-24 bg-gray-50 rounded-lg">
+                <div className="mt-6 p-6 bg-card rounded-lg border">
+                  <h4 className="font-semibold mb-4">{t('circuit')}</h4>
+                  <div className="flex items-center justify-center h-24 bg-muted rounded-lg">
                     <div className="flex items-center space-x-4 text-gray-600">
                       <div className="w-8 h-1 bg-gray-400"></div>
                       <div className="w-6 h-6 border-2 border-gray-400 rounded"></div>
@@ -225,12 +255,15 @@ export function QuickCalculators() {
             {activeCalculator !== 'led' && (
               <div className="text-center py-12">
                 <Calculator className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Calculadora em Desenvolvimento
+                <h3 className="text-xl font-semibold mb-2">
+                  {t('inDevelopment')}
                 </h3>
-                <p className="text-gray-600">
-                  Esta calculadora estará disponível em breve.
+                <p className="text-muted-foreground">
+                  {t('availableBelow')}
                 </p>
+                <Button asChild className="mt-6">
+                  <a href="#advanced-calculators">{t('advancedCalculators')}</a>
+                </Button>
               </div>
             )}
           </div>

@@ -9,10 +9,10 @@
     "url": "https://github.com/leddzeppellin/site-guia-eletronica/issues"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --configLoader runner",
+    "build": "vite build --configLoader runner",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview --configLoader runner"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

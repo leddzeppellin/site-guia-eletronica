@@ -15,8 +15,12 @@ const translations = {
     // Navigation
     catalog: 'Catálogo',
     calculators: 'Calculadoras',
+    advancedCalculators: 'Avançadas',
     learn: 'Aprender',
     search: 'Busca',
+    menu: 'Menu',
+    darkTheme: 'Ativar tema escuro',
+    lightTheme: 'Ativar tema claro',
     
     // Hero section
     heroTitle: 'Aprenda sobre',
@@ -29,10 +33,24 @@ const translations = {
     components: 'Componentes',
     tutorials: 'Tutoriais',
     languages: 'Idiomas',
+    didactic: 'Didático',
+    interactive: 'Interativo',
     
     // Categories
     categoriesTitle: 'Categorias de Componentes',
     categoriesDescription: 'Explore nossa coleção organizada de componentes eletrônicos, desde os mais básicos até os mais avançados.',
+    featuredComponents: 'Componentes em destaque',
+    registeredComponents: 'Componentes cadastrados',
+    searchPlaceholder: 'Buscar por nome, aplicação, categoria ou tag...',
+    clearSearch: 'Limpar busca',
+    clearFilters: 'Limpar filtros',
+    filterByCategory: 'Filtrar por categoria',
+    filterByDifficulty: 'Filtrar por dificuldade',
+    allCategories: 'Todas',
+    allLevels: 'Todos os níveis',
+    of: 'de',
+    noComponentsFound: 'Nenhum componente encontrado',
+    tryDifferentFilters: 'Tente outro termo de busca ou remova algum filtro.',
     
     // Component categories
     resistors: 'Resistores',
@@ -77,6 +95,10 @@ const translations = {
     active: 'Ativo',
     viewAll: 'Ver Todas as Categorias',
     viewAllCalculators: 'Ver Todas as Calculadoras',
+    invalidInputs: 'Confira os valores informados antes de calcular.',
+    fillTwoFields: 'Preencha pelo menos dois campos válidos para calcular os demais.',
+    availableBelow: 'Disponível nas calculadoras avançadas abaixo.',
+    inDevelopment: 'Calculadora em desenvolvimento',
     
     // Difficulty levels
     beginner: 'Iniciante',
@@ -101,8 +123,12 @@ const translations = {
     // Navigation
     catalog: 'Catalog',
     calculators: 'Calculators',
+    advancedCalculators: 'Advanced',
     learn: 'Learn',
     search: 'Search',
+    menu: 'Menu',
+    darkTheme: 'Enable dark theme',
+    lightTheme: 'Enable light theme',
     
     // Hero section
     heroTitle: 'Learn about',
@@ -115,10 +141,24 @@ const translations = {
     components: 'Components',
     tutorials: 'Tutorials',
     languages: 'Languages',
+    didactic: 'Didactic',
+    interactive: 'Interactive',
     
     // Categories
     categoriesTitle: 'Component Categories',
     categoriesDescription: 'Explore our organized collection of electronic components, from the most basic to the most advanced.',
+    featuredComponents: 'Featured components',
+    registeredComponents: 'Registered components',
+    searchPlaceholder: 'Search by name, application, category, or tag...',
+    clearSearch: 'Clear search',
+    clearFilters: 'Clear filters',
+    filterByCategory: 'Filter by category',
+    filterByDifficulty: 'Filter by difficulty',
+    allCategories: 'All',
+    allLevels: 'All levels',
+    of: 'of',
+    noComponentsFound: 'No components found',
+    tryDifferentFilters: 'Try another search term or remove a filter.',
     
     // Component categories
     resistors: 'Resistors',
@@ -163,6 +203,10 @@ const translations = {
     active: 'Active',
     viewAll: 'View All Categories',
     viewAllCalculators: 'View All Calculators',
+    invalidInputs: 'Check the entered values before calculating.',
+    fillTwoFields: 'Fill at least two valid fields to calculate the others.',
+    availableBelow: 'Available in the advanced calculators below.',
+    inDevelopment: 'Calculator in development',
     
     // Difficulty levels
     beginner: 'Beginner',

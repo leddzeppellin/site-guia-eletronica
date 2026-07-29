@@ -1,222 +1,311 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button.jsx';
 import { Badge } from '@/components/ui/badge.jsx';
-import { 
-  Calculator, 
-  Zap, 
-  Settings, 
+import { Button } from '@/components/ui/button.jsx';
+import {
   Activity,
-  ArrowRight,
+  Calculator,
   Info,
-  TrendingUp
+  RotateCcw,
+  Settings,
+  TrendingUp,
 } from 'lucide-react';
+import { useLanguage } from './LanguageProvider.jsx';
+
+const initialInputs = {
+  ohm: { voltage: '', current: '', resistance: '', power: '' },
+  divider: { inputVoltage: '', r1: '', r2: '' },
+  rc: { resistance: '', capacitance: '', mode: 'lowpass' },
+  power: { inputVoltage: '', loadVoltage: '', current: '', dutyCycle: '100' },
+};
 
 export function AdvancedCalculators() {
+  const { t } = useLanguage();
   const [activeCalculator, setActiveCalculator] = useState('ohm');
-  const [ohmInputs, setOhmInputs] = useState({
-    voltage: '',
-    current: '',
-    resistance: '',
-    power: ''
-  });
-  const [dividerInputs, setDividerInputs] = useState({
-    inputVoltage: '',
-    r1: '',
-    r2: ''
-  });
+  const [inputs, setInputs] = useState(initialInputs);
   const [results, setResults] = useState(null);
+  const [error, setError] = useState('');
 
   const calculators = [
     {
       id: 'ohm',
       name: 'Lei de Ohm',
       description: 'Calcule V, I, R ou P conhecendo dois valores',
-      icon: <Calculator className="h-5 w-5" />,
-      color: 'bg-blue-50 border-blue-200',
-      difficulty: 'beginner'
+      icon: Calculator,
+      color: 'bg-blue-50 border-blue-200 dark:bg-blue-950/30 dark:border-blue-900',
+      difficulty: 'beginner',
     },
     {
       id: 'divider',
       name: 'Divisor de Tensão',
-      description: 'Calcule a tensão de saída do divisor resistivo',
-      icon: <Settings className="h-5 w-5" />,
-      color: 'bg-green-50 border-green-200',
-      difficulty: 'intermediate'
+      description: 'Calcule saída, corrente e dissipação nos resistores',
+      icon: Settings,
+      color: 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900',
+      difficulty: 'intermediate',
     },
     {
       id: 'rc',
       name: 'Filtro RC',
-      description: 'Calcule a frequência de corte do filtro',
-      icon: <Activity className="h-5 w-5" />,
-      color: 'bg-purple-50 border-purple-200',
-      difficulty: 'intermediate'
+      description: 'Calcule frequência de corte e constante de tempo',
+      icon: Activity,
+      color: 'bg-purple-50 border-purple-200 dark:bg-purple-950/30 dark:border-purple-900',
+      difficulty: 'intermediate',
     },
     {
       id: 'power',
       name: 'Análise de Potência',
-      description: 'Calcule potência dissipada e eficiência',
-      icon: <TrendingUp className="h-5 w-5" />,
-      color: 'bg-orange-50 border-orange-200',
-      difficulty: 'advanced'
-    }
+      description: 'Estime consumo, dissipação, eficiência e margem',
+      icon: TrendingUp,
+      color: 'bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-900',
+      difficulty: 'advanced',
+    },
   ];
 
-  const calculateOhm = () => {
-    const V = parseFloat(ohmInputs.voltage) || null;
-    const I = parseFloat(ohmInputs.current) || null;
-    const R = parseFloat(ohmInputs.resistance) || null;
-    const P = parseFloat(ohmInputs.power) || null;
+  const active = inputs[activeCalculator];
 
-    const filledInputs = [V, I, R, P].filter(val => val !== null).length;
-    
-    if (filledInputs < 2) {
-      alert('Preencha pelo menos 2 campos para calcular os demais.');
-      return;
-    }
-
-    let calculatedResults = {};
-
-    // Calculate missing values based on Ohm's law and power formulas
-    if (V !== null && I !== null) {
-      calculatedResults.resistance = (V / I).toFixed(2);
-      calculatedResults.power = (V * I).toFixed(2);
-    } else if (V !== null && R !== null) {
-      calculatedResults.current = (V / R).toFixed(3);
-      calculatedResults.power = (Math.pow(V, 2) / R).toFixed(2);
-    } else if (I !== null && R !== null) {
-      calculatedResults.voltage = (I * R).toFixed(2);
-      calculatedResults.power = (Math.pow(I, 2) * R).toFixed(2);
-    } else if (V !== null && P !== null) {
-      calculatedResults.current = (P / V).toFixed(3);
-      calculatedResults.resistance = (Math.pow(V, 2) / P).toFixed(2);
-    } else if (I !== null && P !== null) {
-      calculatedResults.voltage = (P / I).toFixed(2);
-      calculatedResults.resistance = (P / Math.pow(I, 2)).toFixed(2);
-    } else if (R !== null && P !== null) {
-      calculatedResults.current = Math.sqrt(P / R).toFixed(3);
-      calculatedResults.voltage = Math.sqrt(P * R).toFixed(2);
-    }
-
-    setResults(calculatedResults);
-  };
-
-  const calculateDivider = () => {
-    const Vin = parseFloat(dividerInputs.inputVoltage);
-    const R1 = parseFloat(dividerInputs.r1);
-    const R2 = parseFloat(dividerInputs.r2);
-
-    if (Vin && R1 && R2) {
-      const Vout = (Vin * R2) / (R1 + R2);
-      const totalCurrent = Vin / (R1 + R2);
-      const powerR1 = Math.pow(totalCurrent, 2) * R1;
-      const powerR2 = Math.pow(totalCurrent, 2) * R2;
-      const totalPower = powerR1 + powerR2;
-
-      setResults({
-        outputVoltage: Vout.toFixed(2),
-        current: (totalCurrent * 1000).toFixed(2), // Convert to mA
-        powerR1: (powerR1 * 1000).toFixed(2), // Convert to mW
-        powerR2: (powerR2 * 1000).toFixed(2), // Convert to mW
-        totalPower: (totalPower * 1000).toFixed(2) // Convert to mW
-      });
-    }
-  };
-
-  const handleOhmInputChange = (field, value) => {
-    setOhmInputs(prev => ({ ...prev, [field]: value }));
+  const updateInput = (field, value) => {
+    setInputs((current) => ({
+      ...current,
+      [activeCalculator]: {
+        ...current[activeCalculator],
+        [field]: value,
+      },
+    }));
     setResults(null);
+    setError('');
   };
 
-  const handleDividerInputChange = (field, value) => {
-    setDividerInputs(prev => ({ ...prev, [field]: value }));
+  const selectCalculator = (id) => {
+    setActiveCalculator(id);
     setResults(null);
+    setError('');
   };
 
   const clearInputs = () => {
-    if (activeCalculator === 'ohm') {
-      setOhmInputs({ voltage: '', current: '', resistance: '', power: '' });
-    } else if (activeCalculator === 'divider') {
-      setDividerInputs({ inputVoltage: '', r1: '', r2: '' });
-    }
+    setInputs((current) => ({
+      ...current,
+      [activeCalculator]: initialInputs[activeCalculator],
+    }));
     setResults(null);
+    setError('');
   };
 
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const calculate = () => {
+    const calculatorsById = {
+      ohm: calculateOhm,
+      divider: calculateDivider,
+      rc: calculateRc,
+      power: calculatePower,
+    };
+
+    calculatorsById[activeCalculator]();
   };
 
-  const getDifficultyText = (difficulty) => {
-    switch (difficulty) {
-      case 'beginner': return 'Iniciante';
-      case 'intermediate': return 'Intermediário';
-      case 'advanced': return 'Avançado';
-      default: return 'Não definido';
+  const calculateOhm = () => {
+    const V = parseNumber(active.voltage);
+    const I = parseNumber(active.current);
+    const R = parseNumber(active.resistance);
+    const P = parseNumber(active.power);
+    const filledInputs = [V, I, R, P].filter((value) => value !== null).length;
+
+    if (filledInputs < 2 || [I, R, P].some((value) => value !== null && value <= 0)) {
+      showError(t('fillTwoFields'));
+      return;
     }
+
+    if (R === 0 || I === 0 || V === 0) {
+      showError(t('invalidInputs'));
+      return;
+    }
+
+    let calculated = {};
+
+    if (V !== null && I !== null) {
+      calculated = {
+        resistance: formatNumber(V / I, 'Ω'),
+        power: formatNumber(V * I, 'W'),
+      };
+    } else if (V !== null && R !== null) {
+      calculated = {
+        current: formatNumber(V / R, 'A'),
+        power: formatNumber((V * V) / R, 'W'),
+      };
+    } else if (I !== null && R !== null) {
+      calculated = {
+        voltage: formatNumber(I * R, 'V'),
+        power: formatNumber(I * I * R, 'W'),
+      };
+    } else if (V !== null && P !== null) {
+      calculated = {
+        current: formatNumber(P / V, 'A'),
+        resistance: formatNumber((V * V) / P, 'Ω'),
+      };
+    } else if (I !== null && P !== null) {
+      calculated = {
+        voltage: formatNumber(P / I, 'V'),
+        resistance: formatNumber(P / (I * I), 'Ω'),
+      };
+    } else if (R !== null && P !== null) {
+      calculated = {
+        current: formatNumber(Math.sqrt(P / R), 'A'),
+        voltage: formatNumber(Math.sqrt(P * R), 'V'),
+      };
+    }
+
+    setResults([
+      ['Tensão', calculated.voltage],
+      ['Corrente', calculated.current],
+      ['Resistência', calculated.resistance],
+      ['Potência', calculated.power],
+    ].filter(([, value]) => value));
+    setError('');
+  };
+
+  const calculateDivider = () => {
+    const Vin = parseNumber(active.inputVoltage);
+    const R1 = parseNumber(active.r1);
+    const R2 = parseNumber(active.r2);
+
+    if (![Vin, R1, R2].every((value) => value !== null) || R1 <= 0 || R2 <= 0) {
+      showError(t('invalidInputs'));
+      return;
+    }
+
+    const totalResistance = R1 + R2;
+    const current = Vin / totalResistance;
+    const outputVoltage = (Vin * R2) / totalResistance;
+    const powerR1 = current * current * R1;
+    const powerR2 = current * current * R2;
+
+    setResults([
+      ['Tensão de saída', formatNumber(outputVoltage, 'V')],
+      ['Corrente total', formatNumber(current * 1000, 'mA')],
+      ['Potência em R1', formatNumber(powerR1 * 1000, 'mW')],
+      ['Potência em R2', formatNumber(powerR2 * 1000, 'mW')],
+      ['Potência total', formatNumber((powerR1 + powerR2) * 1000, 'mW')],
+    ]);
+    setError('');
+  };
+
+  const calculateRc = () => {
+    const resistance = parseNumber(active.resistance);
+    const capacitanceMicro = parseNumber(active.capacitance);
+
+    if (!resistance || !capacitanceMicro || resistance <= 0 || capacitanceMicro <= 0) {
+      showError(t('invalidInputs'));
+      return;
+    }
+
+    const capacitance = capacitanceMicro / 1000000;
+    const tau = resistance * capacitance;
+    const cutoff = 1 / (2 * Math.PI * tau);
+
+    setResults([
+      ['Tipo de filtro', active.mode === 'lowpass' ? 'Passa-baixas' : 'Passa-altas'],
+      ['Frequência de corte', formatFrequency(cutoff)],
+      ['Constante de tempo', formatTime(tau)],
+      ['Subida aproximada', formatTime(2.2 * tau)],
+      ['Estabilização aproximada', formatTime(5 * tau)],
+    ]);
+    setError('');
+  };
+
+  const calculatePower = () => {
+    const inputVoltage = parseNumber(active.inputVoltage);
+    const loadVoltage = parseNumber(active.loadVoltage);
+    const currentMilli = parseNumber(active.current);
+    const dutyCycle = parseNumber(active.dutyCycle);
+
+    if (
+      !inputVoltage ||
+      !loadVoltage ||
+      !currentMilli ||
+      dutyCycle === null ||
+      inputVoltage <= 0 ||
+      loadVoltage <= 0 ||
+      currentMilli <= 0 ||
+      dutyCycle <= 0 ||
+      dutyCycle > 100
+    ) {
+      showError(t('invalidInputs'));
+      return;
+    }
+
+    const current = currentMilli / 1000;
+    const duty = dutyCycle / 100;
+    const loadPower = loadVoltage * current * duty;
+    const inputPower = inputVoltage * current * duty;
+    const dissipatedPower = Math.max(inputPower - loadPower, 0);
+    const efficiency = inputPower > 0 ? (loadPower / inputPower) * 100 : 0;
+
+    setResults([
+      ['Potência na carga', formatNumber(loadPower, 'W')],
+      ['Potência de entrada', formatNumber(inputPower, 'W')],
+      ['Dissipação estimada', formatNumber(dissipatedPower, 'W')],
+      ['Eficiência estimada', formatNumber(efficiency, '%')],
+      ['Margem recomendada', formatNumber(Math.max(loadPower, dissipatedPower) * 2, 'W')],
+    ]);
+    setError('');
+  };
+
+  const showError = (message) => {
+    setResults(null);
+    setError(message);
   };
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section id="advanced-calculators" className="py-20 bg-muted/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Calculadoras Avançadas
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Ferramentas mais sofisticadas para análise de circuitos e cálculos precisos. 
-            Ideal para projetos mais complexos.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Ferramentas para validar circuitos, estimar limites e escolher componentes com mais segurança.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Calculator Selection */}
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-gray-900 mb-6">
+            <h3 className="text-xl font-semibold mb-6">
               Escolha uma calculadora:
             </h3>
-            
+
             <div className="space-y-3">
-              {calculators.map((calc) => (
+              {calculators.map((calculator) => (
                 <button
-                  key={calc.id}
-                  onClick={() => setActiveCalculator(calc.id)}
-                  className={`w-full p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                    activeCalculator === calc.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : calc.color + ' hover:shadow-md'
+                  key={calculator.id}
+                  type="button"
+                  onClick={() => selectCalculator(calculator.id)}
+                  className={`w-full rounded-lg border-2 p-4 text-left transition hover:shadow-md ${
+                    activeCalculator === calculator.id
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/50'
+                      : calculator.color
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <div className={`${activeCalculator === calc.id ? 'text-blue-600' : 'text-gray-600'}`}>
-                        {calc.icon}
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{calc.name}</h4>
-                      </div>
+                  <div className="mb-2 flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <calculator.icon className={`h-5 w-5 ${activeCalculator === calculator.id ? 'text-blue-600' : 'text-muted-foreground'}`} />
+                      <h4 className="font-semibold text-foreground">{calculator.name}</h4>
                     </div>
-                    <Badge className={getDifficultyColor(calc.difficulty)}>
-                      {getDifficultyText(calc.difficulty)}
+                    <Badge className={getDifficultyColor(calculator.difficulty)}>
+                      {getDifficultyText(calculator.difficulty)}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 ml-8">{calc.description}</p>
+                  <p className="ml-8 text-sm leading-6 text-muted-foreground">
+                    {calculator.description}
+                  </p>
                 </button>
               ))}
             </div>
 
             <div className="pt-6 border-t">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex items-start space-x-3">
-                  <Info className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/60 dark:bg-blue-950/30">
+                <div className="flex items-start gap-3">
+                  <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
                   <div>
-                    <h4 className="font-semibold text-blue-900 mb-1">Dica</h4>
-                    <p className="text-blue-700 text-sm">
-                      Use essas calculadoras para verificar seus cálculos manuais e 
-                      entender melhor o comportamento dos circuitos.
+                    <h4 className="mb-1 font-semibold text-blue-900 dark:text-blue-100">Dica</h4>
+                    <p className="text-sm leading-6 text-blue-700 dark:text-blue-200">
+                      Use uma margem de potência maior em componentes que aquecem ou ficam ligados por longos períodos.
                     </p>
                   </div>
                 </div>
@@ -224,287 +313,35 @@ export function AdvancedCalculators() {
             </div>
           </div>
 
-          {/* Calculator Interface */}
-          <div className="lg:col-span-2 bg-white rounded-xl p-8 shadow-sm">
-            {activeCalculator === 'ohm' && (
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Calculadora da Lei de Ohm
-                  </h3>
-                  <p className="text-gray-600">
-                    Preencha dois campos para calcular os demais valores
-                  </p>
-                </div>
+          <div className="lg:col-span-2 rounded-xl bg-card p-8 shadow-sm">
+            <CalculatorForm
+              activeCalculator={activeCalculator}
+              inputs={active}
+              updateInput={updateInput}
+            />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tensão (V)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Ex: 12"
-                      value={ohmInputs.voltage}
-                      onChange={(e) => handleOhmInputChange('voltage', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <Button onClick={calculate} className="flex-1 bg-blue-600 hover:bg-blue-700" size="lg">
+                <Calculator className="mr-2 h-5 w-5" />
+                Calcular
+              </Button>
+              <Button onClick={clearInputs} variant="outline" size="lg">
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Limpar
+              </Button>
+            </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Corrente (A)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.001"
-                      placeholder="Ex: 0.02"
-                      value={ohmInputs.current}
-                      onChange={(e) => handleOhmInputChange('current', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Resistência (Ω)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Ex: 1000"
-                      value={ohmInputs.resistance}
-                      onChange={(e) => handleOhmInputChange('resistance', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Potência (W)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      placeholder="Ex: 0.25"
-                      value={ohmInputs.power}
-                      onChange={(e) => handleOhmInputChange('power', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex space-x-3">
-                  <Button 
-                    onClick={calculateOhm}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                    size="lg"
-                  >
-                    <Calculator className="mr-2 h-5 w-5" />
-                    Calcular
-                  </Button>
-                  <Button 
-                    onClick={clearInputs}
-                    variant="outline"
-                    size="lg"
-                  >
-                    Limpar
-                  </Button>
-                </div>
-
-                {results && (
-                  <div className="mt-6 p-6 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="font-semibold text-blue-900 mb-4">Resultados Calculados:</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {results.voltage && (
-                        <div className="bg-white p-3 rounded-lg">
-                          <span className="text-gray-600">Tensão:</span>
-                          <span className="font-semibold text-blue-600 ml-2">{results.voltage}V</span>
-                        </div>
-                      )}
-                      {results.current && (
-                        <div className="bg-white p-3 rounded-lg">
-                          <span className="text-gray-600">Corrente:</span>
-                          <span className="font-semibold text-green-600 ml-2">{results.current}A</span>
-                        </div>
-                      )}
-                      {results.resistance && (
-                        <div className="bg-white p-3 rounded-lg">
-                          <span className="text-gray-600">Resistência:</span>
-                          <span className="font-semibold text-purple-600 ml-2">{results.resistance}Ω</span>
-                        </div>
-                      )}
-                      {results.power && (
-                        <div className="bg-white p-3 rounded-lg">
-                          <span className="text-gray-600">Potência:</span>
-                          <span className="font-semibold text-orange-600 ml-2">{results.power}W</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Formulas reference */}
-                <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-3">Fórmulas Utilizadas:</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                    <div>V = I × R</div>
-                    <div>I = V ÷ R</div>
-                    <div>R = V ÷ I</div>
-                    <div>P = V × I</div>
-                    <div>P = V² ÷ R</div>
-                    <div>P = I² × R</div>
-                  </div>
-                </div>
+            {error && (
+              <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">
+                {error}
               </div>
             )}
 
-            {activeCalculator === 'divider' && (
-              <div className="space-y-6">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Calculadora de Divisor de Tensão
-                  </h3>
-                  <p className="text-gray-600">
-                    Calcule a tensão de saída do divisor resistivo
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Tensão de Entrada (V)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Ex: 12"
-                      value={dividerInputs.inputVoltage}
-                      onChange={(e) => handleDividerInputChange('inputVoltage', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Resistor R1 (Ω) - Superior
-                      </label>
-                      <input
-                        type="number"
-                        step="1"
-                        placeholder="Ex: 1000"
-                        value={dividerInputs.r1}
-                        onChange={(e) => handleDividerInputChange('r1', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Resistor R2 (Ω) - Inferior
-                      </label>
-                      <input
-                        type="number"
-                        step="1"
-                        placeholder="Ex: 2000"
-                        value={dividerInputs.r2}
-                        onChange={(e) => handleDividerInputChange('r2', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex space-x-3">
-                    <Button 
-                      onClick={calculateDivider}
-                      className="flex-1 bg-green-600 hover:bg-green-700"
-                      size="lg"
-                    >
-                      <Calculator className="mr-2 h-5 w-5" />
-                      Calcular
-                    </Button>
-                    <Button 
-                      onClick={clearInputs}
-                      variant="outline"
-                      size="lg"
-                    >
-                      Limpar
-                    </Button>
-                  </div>
-                </div>
-
-                {results && (
-                  <div className="mt-6 p-6 bg-green-50 rounded-lg border border-green-200">
-                    <h4 className="font-semibold text-green-900 mb-4">Resultados:</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between bg-white p-3 rounded-lg">
-                        <span className="text-gray-600">Tensão de Saída:</span>
-                        <span className="font-semibold text-green-600">{results.outputVoltage}V</span>
-                      </div>
-                      <div className="flex justify-between bg-white p-3 rounded-lg">
-                        <span className="text-gray-600">Corrente Total:</span>
-                        <span className="font-semibold text-blue-600">{results.current}mA</span>
-                      </div>
-                      <div className="flex justify-between bg-white p-3 rounded-lg">
-                        <span className="text-gray-600">Potência em R1:</span>
-                        <span className="font-semibold text-orange-600">{results.powerR1}mW</span>
-                      </div>
-                      <div className="flex justify-between bg-white p-3 rounded-lg">
-                        <span className="text-gray-600">Potência em R2:</span>
-                        <span className="font-semibold text-orange-600">{results.powerR2}mW</span>
-                      </div>
-                      <div className="flex justify-between bg-white p-3 rounded-lg">
-                        <span className="text-gray-600">Potência Total:</span>
-                        <span className="font-semibold text-red-600">{results.totalPower}mW</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Circuit diagram */}
-                <div className="mt-6 p-6 bg-white border rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-4">Circuito:</h4>
-                  <div className="flex items-center justify-center h-32">
-                    <div className="text-center">
-                      <div className="flex flex-col items-center space-y-2">
-                        <div className="text-sm text-gray-600">Vin</div>
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                        <div className="w-8 h-8 border-2 border-gray-400 rounded flex items-center justify-center text-xs">R1</div>
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                        <div className="flex items-center">
-                          <div className="w-8 h-1 bg-gray-400"></div>
-                          <div className="text-sm text-gray-600 mx-2">Vout</div>
-                        </div>
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                        <div className="w-8 h-8 border-2 border-gray-400 rounded flex items-center justify-center text-xs">R2</div>
-                        <div className="w-1 h-6 bg-gray-400"></div>
-                        <div className="text-sm text-gray-600">GND</div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-500 text-center mt-4">
-                    Vout = Vin × (R2 ÷ (R1 + R2))
-                  </p>
-                </div>
-              </div>
+            {results && (
+              <ResultList results={results} />
             )}
 
-            {(activeCalculator === 'rc' || activeCalculator === 'power') && (
-              <div className="text-center py-12">
-                <Calculator className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Calculadora em Desenvolvimento
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Esta calculadora estará disponível em breve.
-                </p>
-                <Badge className="bg-yellow-100 text-yellow-800">
-                  Em breve
-                </Badge>
-              </div>
-            )}
+            <FormulaReference activeCalculator={activeCalculator} />
           </div>
         </div>
       </div>
@@ -512,3 +349,181 @@ export function AdvancedCalculators() {
   );
 }
 
+function CalculatorForm({ activeCalculator, inputs, updateInput }) {
+  if (activeCalculator === 'ohm') {
+    return (
+      <div className="space-y-6">
+        <FormHeader
+          title="Calculadora da Lei de Ohm"
+          description="Preencha dois campos para calcular os demais valores."
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <NumberField label="Tensão (V)" placeholder="Ex: 12" value={inputs.voltage} onChange={(value) => updateInput('voltage', value)} />
+          <NumberField label="Corrente (A)" placeholder="Ex: 0.02" value={inputs.current} onChange={(value) => updateInput('current', value)} />
+          <NumberField label="Resistência (Ω)" placeholder="Ex: 1000" value={inputs.resistance} onChange={(value) => updateInput('resistance', value)} />
+          <NumberField label="Potência (W)" placeholder="Ex: 0.25" value={inputs.power} onChange={(value) => updateInput('power', value)} />
+        </div>
+      </div>
+    );
+  }
+
+  if (activeCalculator === 'divider') {
+    return (
+      <div className="space-y-6">
+        <FormHeader
+          title="Calculadora de Divisor de Tensão"
+          description="Calcule a tensão de saída do divisor resistivo e a dissipação em cada resistor."
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <NumberField label="Tensão de entrada (V)" placeholder="Ex: 12" value={inputs.inputVoltage} onChange={(value) => updateInput('inputVoltage', value)} />
+          <NumberField label="R1 superior (Ω)" placeholder="Ex: 1000" value={inputs.r1} onChange={(value) => updateInput('r1', value)} />
+          <NumberField label="R2 inferior (Ω)" placeholder="Ex: 2000" value={inputs.r2} onChange={(value) => updateInput('r2', value)} />
+        </div>
+      </div>
+    );
+  }
+
+  if (activeCalculator === 'rc') {
+    return (
+      <div className="space-y-6">
+        <FormHeader
+          title="Calculadora de Filtro RC"
+          description="Informe R em ohms e C em microfarads para obter corte e tempo de resposta."
+        />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <NumberField label="Resistência (Ω)" placeholder="Ex: 10000" value={inputs.resistance} onChange={(value) => updateInput('resistance', value)} />
+          <NumberField label="Capacitância (µF)" placeholder="Ex: 0.1" value={inputs.capacitance} onChange={(value) => updateInput('capacitance', value)} />
+          <div>
+            <label className="mb-2 block text-sm font-medium text-muted-foreground">Tipo</label>
+            <select
+              value={inputs.mode}
+              onChange={(event) => updateInput('mode', event.target.value)}
+              className="h-12 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            >
+              <option value="lowpass">Passa-baixas</option>
+              <option value="highpass">Passa-altas</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <FormHeader
+        title="Análise de Potência"
+        description="Estime potência na carga, dissipação e eficiência usando corrente média ou duty cycle."
+      />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <NumberField label="Tensão de entrada (V)" placeholder="Ex: 12" value={inputs.inputVoltage} onChange={(value) => updateInput('inputVoltage', value)} />
+        <NumberField label="Tensão na carga (V)" placeholder="Ex: 5" value={inputs.loadVoltage} onChange={(value) => updateInput('loadVoltage', value)} />
+        <NumberField label="Corrente da carga (mA)" placeholder="Ex: 250" value={inputs.current} onChange={(value) => updateInput('current', value)} />
+        <NumberField label="Duty cycle (%)" placeholder="Ex: 100" value={inputs.dutyCycle} onChange={(value) => updateInput('dutyCycle', value)} />
+      </div>
+    </div>
+  );
+}
+
+function FormHeader({ title, description }) {
+  return (
+    <div className="text-center">
+      <h3 className="text-2xl font-bold">{title}</h3>
+      <p className="mt-2 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function NumberField({ label, placeholder, value, onChange }) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm font-medium text-muted-foreground">{label}</label>
+      <input
+        type="number"
+        step="any"
+        placeholder={placeholder}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-12 w-full rounded-lg border bg-background px-4 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+      />
+    </div>
+  );
+}
+
+function ResultList({ results }) {
+  return (
+    <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-6 dark:border-blue-900/60 dark:bg-blue-950/30">
+      <h4 className="mb-4 font-semibold text-blue-900 dark:text-blue-100">Resultados</h4>
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {results.map(([label, value]) => (
+          <div key={label} className="rounded-lg bg-white p-3 dark:bg-background">
+            <div className="text-sm text-muted-foreground">{label}</div>
+            <div className="mt-1 font-semibold text-blue-700 dark:text-blue-300">{value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FormulaReference({ activeCalculator }) {
+  const formulas = {
+    ohm: ['V = I x R', 'I = V / R', 'R = V / I', 'P = V x I', 'P = V² / R', 'P = I² x R'],
+    divider: ['Vout = Vin x R2 / (R1 + R2)', 'I = Vin / (R1 + R2)', 'P = I² x R'],
+    rc: ['fc = 1 / (2 x pi x R x C)', 'tau = R x C', 'subida aproximada = 2.2 x tau', 'estabilização aproximada = 5 x tau'],
+    power: ['P carga = V carga x I x duty', 'P entrada = V entrada x I x duty', 'eficiência = P carga / P entrada'],
+  };
+
+  return (
+    <div className="mt-6 rounded-lg bg-muted p-4">
+      <h4 className="mb-3 font-semibold">Fórmulas utilizadas</h4>
+      <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+        {formulas[activeCalculator].map((formula) => (
+          <div key={formula}>{formula}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function parseNumber(value) {
+  if (value === '') return null;
+  const parsed = parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatNumber(value, unit) {
+  const abs = Math.abs(value);
+  const decimals = abs >= 100 ? 1 : abs >= 10 ? 2 : 3;
+  return `${Number(value.toFixed(decimals))}${unit}`;
+}
+
+function formatFrequency(value) {
+  if (value >= 1000000) return `${Number((value / 1000000).toFixed(3))}MHz`;
+  if (value >= 1000) return `${Number((value / 1000).toFixed(3))}kHz`;
+  return `${Number(value.toFixed(3))}Hz`;
+}
+
+function formatTime(seconds) {
+  if (seconds >= 1) return `${Number(seconds.toFixed(3))}s`;
+  if (seconds >= 0.001) return `${Number((seconds * 1000).toFixed(3))}ms`;
+  return `${Number((seconds * 1000000).toFixed(3))}µs`;
+}
+
+function getDifficultyColor(difficulty) {
+  switch (difficulty) {
+    case 'beginner': return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-100';
+    case 'intermediate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-100';
+    case 'advanced': return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-100';
+    default: return 'bg-muted text-muted-foreground';
+  }
+}
+
+function getDifficultyText(difficulty) {
+  switch (difficulty) {
+    case 'beginner': return 'Iniciante';
+    case 'intermediate': return 'Intermediário';
+    case 'advanced': return 'Avançado';
+    default: return 'Não definido';
+  }
+}
