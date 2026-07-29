@@ -9,8 +9,8 @@ export function Footer() {
       links: [
         { name: 'Catálogo', href: '#catalog', icon: <BookOpen className="h-4 w-4" /> },
         { name: 'Calculadoras', href: '#calculators', icon: <Calculator className="h-4 w-4" /> },
-        { name: 'Busca', href: '#search', icon: <Search className="h-4 w-4" /> },
-        { name: 'Sobre', href: '#about', icon: <Globe className="h-4 w-4" /> }
+        { name: 'Avançadas', href: '#advanced-calculators', icon: <Search className="h-4 w-4" /> },
+        { name: 'Aprender', href: '#learn', icon: <Globe className="h-4 w-4" /> }
       ]
     },
     {
@@ -41,7 +41,7 @@ export function Footer() {
           <div className="lg:col-span-1">
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-blue-400 mb-2">
-                ComponentesEDU
+                Guia Eletrônica
               </h3>
               <p className="text-gray-300 leading-relaxed">
                 Plataforma educacional dedicada ao ensino de eletrônica através 
@@ -51,14 +51,14 @@ export function Footer() {
 
             <div className="flex space-x-4">
               <a
-                href="#"
+                href="https://github.com/leddzeppellin/site-guia-eletronica"
                 className="text-gray-400 hover:text-blue-400 transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="h-6 w-6" />
               </a>
               <a
-                href="#"
+                href="mailto:contato@guiaeletronica.dev"
                 className="text-gray-400 hover:text-blue-400 transition-colors"
                 aria-label="Email"
               >
@@ -94,15 +94,15 @@ export function Footer() {
         <div className="border-t border-gray-800 mt-12 pt-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div>
-              <div className="text-2xl font-bold text-blue-400">200+</div>
+              <div className="text-2xl font-bold text-blue-400">18</div>
               <div className="text-gray-400 text-sm">Componentes</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-green-400">15+</div>
+              <div className="text-2xl font-bold text-green-400">3</div>
               <div className="text-gray-400 text-sm">Calculadoras</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-yellow-400">50+</div>
+              <div className="text-2xl font-bold text-yellow-400">4</div>
               <div className="text-gray-400 text-sm">Tutoriais</div>
             </div>
             <div>
@@ -116,7 +116,7 @@ export function Footer() {
         <div className="border-t border-gray-800 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              © {currentYear} ComponentesEDU. Todos os direitos reservados.
+              © {currentYear} Guia Eletrônica. Todos os direitos reservados.
             </div>
             
             <div className="flex items-center space-x-6 text-sm">
